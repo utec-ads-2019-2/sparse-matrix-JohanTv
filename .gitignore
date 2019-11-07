@@ -1,3 +1,9 @@
+.idea/
+.vscode/
+cmake-build-debug/
+CMakeLists.txt
+LICENSE.txt
+
 # Prerequisites
 *.d
 
