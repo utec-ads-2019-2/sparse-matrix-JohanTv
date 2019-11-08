@@ -14,33 +14,27 @@ private:
 
     unsigned int rows, columns;
 
-    bool emptyHeaderInY(unsigned int posY){
-        return !((*rootY)[posY]->next);
-    }
-    bool emptyHeaderInX(unsigned int posX){
-        return !((*rootX)[posX]->next);
-    }
-
-    void setRootY(unsigned int posX, unsigned int posY, NodeElement<T>* newNode){
-        if(emptyHeaderInY(posY)){
-            (*rootY)[posY]->next = newNode;
-        }
-        else{
-            //pass
-        }
-    }
     void setRootX(unsigned int posX, unsigned int posY, NodeElement<T>* newNode){
-        if(emptyHeaderInX(posX)){
-            (*rootX)[posX]->next = newNode;
-        }
-        else{
-            //pass
+        NodeElement<T>** findInX = &((*rootX)[posX]->next);
+        if(!findInHeaderX(posX,posY,newNode->data,findInX)){
+            NodeElement<T>* temp = (*findInX);
+            (*findInX) = newNode;
+            newNode->down = temp;
         }
     }
 
-    bool findInMatrix(unsigned int posX, unsigned int posY, T data, NodeElement<T>**& pointer){
-        while((*pointer)->next){
+    bool findInHeaderY(unsigned int posX, unsigned int posY, T data, NodeElement<T>**& pointer){
+        while((*pointer) && (*pointer)->posX <= posX){
+            if((*pointer)->posX == posX) return true;
+            pointer = &((*pointer)->next);
+        }
+        return false;
+    }
 
+    bool findInHeaderX(unsigned int posX, unsigned int posY, T data, NodeElement<T>**& pointer){
+        while((*pointer) && (*pointer)->posY <= posY){
+            if((*pointer)->posY == posY) return true;
+            pointer = &((*pointer)->down);
         }
         return false;
     }
@@ -59,9 +53,33 @@ public:
 
     bool set(unsigned int posX, unsigned int posY, T data){
         if(columns > posX && rows > posY){
-            NodeElement<T>* newNode = new NodeElement<T>(posX,posY,data);
-            setRootY(posX,posY,newNode);
-            setRootX(posX,posY,newNode);
+            NodeElement<T>** findInY = &((*rootY)[posY]->next);
+
+            if(findInHeaderY(posX,posY,data,findInY)) {
+                if(data != 0) (*findInY)->data = data;
+                else{
+                    NodeElement<T>** findInX = &((*rootX)[posX]->next);
+                    findInHeaderX(posX,posY,data,findInX);
+
+                    NodeElement<T>* tempY = (*findInY)->next;
+                    NodeElement<T>* tempX = (*findInX)->down;
+
+                    delete (*findInX);
+
+                    (*findInX) = tempX;
+                    (*findInY) = tempY;
+                }
+            }
+
+            else{
+                if(data != 0) {
+                    NodeElement<T> *newNode = new NodeElement<T>(posX, posY, data);
+                    NodeElement<T> *temp = (*findInY);
+                    (*findInY) = newNode;
+                    newNode->next = temp;
+                    setRootX(posX, posY, newNode);
+                }
+            }
             return true;
         }
         return false;
