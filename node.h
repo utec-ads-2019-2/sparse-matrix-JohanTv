@@ -25,5 +25,15 @@ struct NodeHeader{
     explicit NodeHeader(){
         next = nullptr;
     }
+
+    T operator[](unsigned int posX){
+        NodeElement<T>* temp = next;
+        while(temp != nullptr && temp->posX <= posX){
+            if(temp->posX == posX) return temp->data;
+            temp = temp->next;
+        }
+        return 0;
+    }
+
 };
 #endif //SPARSE_MATRIX_NODE_H

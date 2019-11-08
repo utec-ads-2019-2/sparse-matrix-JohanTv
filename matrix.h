@@ -16,14 +16,14 @@ private:
 
     void setRootX(unsigned int posX, unsigned int posY, NodeElement<T>* newNode){
         NodeElement<T>** findInX = &((*rootX)[posX]->next);
-        if(!findInHeaderX(posX,posY,newNode->data,findInX)){
+        if(!findInHeaderX(posY,findInX)){
             NodeElement<T>* temp = (*findInX);
             (*findInX) = newNode;
             newNode->down = temp;
         }
     }
 
-    bool findInHeaderY(unsigned int posX, unsigned int posY, T data, NodeElement<T>**& pointer){
+    bool findInHeaderY(unsigned int posX, NodeElement<T>**& pointer){
         while((*pointer) && (*pointer)->posX <= posX){
             if((*pointer)->posX == posX) return true;
             pointer = &((*pointer)->next);
@@ -31,7 +31,7 @@ private:
         return false;
     }
 
-    bool findInHeaderX(unsigned int posX, unsigned int posY, T data, NodeElement<T>**& pointer){
+    bool findInHeaderX(unsigned int posY, NodeElement<T>**& pointer){
         while((*pointer) && (*pointer)->posY <= posY){
             if((*pointer)->posY == posY) return true;
             pointer = &((*pointer)->down);
@@ -51,15 +51,36 @@ public:
             (*rootY)[i] = new NodeHeader<T>();
     }
 
-    bool set(unsigned int posX, unsigned int posY, T data){
+    Matrix(const Matrix &constructCopy):rows(constructCopy.getRows()),columns(constructCopy.getColumns()){
+        rootX = new vector<NodeHeader<T>*>(columns);
+        rootY = new vector<NodeHeader<T>*>(rows);
+
+        for(int i = 0; i < columns; ++i)
+            (*rootX)[i] = new NodeHeader<T>();
+
+        for(int i = 0; i < rows; ++i)
+            (*rootY)[i] = new NodeHeader<T>();
+
+        NodeElement<T>* temp = nullptr;
+        for(int i = 0; i < rows; ++i){
+            temp = constructCopy[i].next;
+            while (temp) {
+                this->set(temp->posY,temp->posX,temp->data);
+                temp = temp->next;
+            }
+        }
+
+    }
+
+    bool set(unsigned int posY, unsigned int posX, T data){
         if(columns > posX && rows > posY){
             NodeElement<T>** findInY = &((*rootY)[posY]->next);
 
-            if(findInHeaderY(posX,posY,data,findInY)) {
+            if(findInHeaderY(posX,findInY)) {
                 if(data != 0) (*findInY)->data = data;
                 else{
                     NodeElement<T>** findInX = &((*rootX)[posX]->next);
-                    findInHeaderX(posX,posY,data,findInX);
+                    findInHeaderX(posY,findInX);
 
                     NodeElement<T>* tempY = (*findInY)->next;
                     NodeElement<T>* tempX = (*findInX)->down;
@@ -79,15 +100,38 @@ public:
                     newNode->next = temp;
                     setRootX(posX, posY, newNode);
                 }
+                return false;
             }
             return true;
         }
         return false;
     }
-    /*
-    T operator()(unsigned, unsigned) const;
-    Matrix<T> operator*(T scalar) const;
-    Matrix<T> operator*(Matrix<T> other) const;
+
+    T operator()(unsigned int posY, unsigned int posX){
+        NodeElement<T>** findInY = &((*rootY)[posY]->next);
+        if(findInHeaderY(posX,findInY))
+            return (*findInY)->data;
+        else return 0;
+    }
+
+    NodeHeader<T> operator[](unsigned int posY) const{
+        return *((*rootY)[posY]);
+    }
+
+    Matrix<T> operator*(T scalar) const{
+        Matrix<T> newMatrix = *this;
+
+        NodeElement<T>* temp = nullptr;
+        for (int i = 0; i < newMatrix.getRows(); ++i) {
+            temp = newMatrix[i].next;
+            while(temp){
+                temp->data*= scalar;
+                temp = temp->next;
+            }
+        }
+        return newMatrix;
+    }
+    /*Matrix<T> operator*(Matrix<T> other) const;
     Matrix<T> operator+(Matrix<T> other) const;
     Matrix<T> operator-(Matrix<T> other) const;
     Matrix<T> transpose() const;*/
@@ -120,7 +164,42 @@ public:
     unsigned int getColumns() const { return columns; }
 
     ~Matrix(){
+        NodeElement<T>** findInY= nullptr;
+        NodeElement<T>** findInX = nullptr;
 
+        NodeElement<T>* tempY = nullptr;
+        NodeElement<T>* tempX = nullptr;
+
+        for (int i = 0; i < rows; ++i) {
+            findInY = &((*rootY)[i]->next);
+            while((*findInY)){
+                findInX = &((*rootX)[(*findInY)->posX]->next);
+                findInHeaderX((*findInY)->posY,findInX);
+
+                tempY = (*findInY)->next;
+                tempX = (*findInX)->down;
+
+                delete (*findInX);
+
+                (*findInX) = tempX;
+                (*findInY) = tempY;
+            }
+        }
+
+        for (int i = 0; i < rows; ++i) {
+            delete (*rootY)[i];
+            (*rootY)[i] = nullptr;
+        }
+        for (int i = 0; i < columns; ++i) {
+            delete (*rootX)[i];
+            (*rootX)[i] = nullptr;
+        }
+
+        (*rootY).clear();
+        (*rootX).clear();
+
+        delete rootY;
+        delete rootX;
     }
 };
 

@@ -5,24 +5,20 @@
 int main() {
     //Tester::execute();
     Matrix<int> miMatriz(3,3);
-    int cont = 1;
+    int cont = 0;
     for (int i = 0; i < miMatriz.getRows(); ++i) {
         for (int j = 0; j < miMatriz.getColumns(); ++j) {
-            miMatriz.set(j,i,0);
-            ++cont;
-        }
-    }
-    miMatriz.print();
-
-    cout<<"\n\n\n";
-    for (int i = 0; i < miMatriz.getRows(); ++i) {
-        for (int j = 0; j < miMatriz.getColumns(); ++j) {
-            miMatriz.set(j,i,0);
+            miMatriz.set(i,j,2*cont+1);
             ++cont;
         }
     }
 
+    Matrix<int> matrixScalar = miMatriz*2;
+
     miMatriz.print();
+    cout<<"\n\n";
+    matrixScalar.print();
+
     return EXIT_SUCCESS;
 }
 
