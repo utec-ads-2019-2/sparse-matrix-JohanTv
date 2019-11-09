@@ -38,9 +38,52 @@ private:
         }
         return false;
     }
-public:
-    Matrix(unsigned int rows, unsigned int columns):rows(rows),columns(columns){
 
+    void deleteElements(){
+        NodeElement<T>** findInY= nullptr;
+        NodeElement<T>** findInX = nullptr;
+
+        NodeElement<T>* tempY = nullptr;
+        NodeElement<T>* tempX = nullptr;
+
+        for (int i = 0; i < rows; ++i) {
+            findInY = &((*rootY)[i]->next);
+            while((*findInY)){
+                findInX = &((*rootX)[(*findInY)->posX]->next);
+                findInHeaderX((*findInY)->posY,findInX);
+
+                tempY = (*findInY)->next;
+                tempX = (*findInX)->down;
+
+                delete (*findInX);
+
+                (*findInX) = tempX;
+                (*findInY) = tempY;
+            }
+        }
+    }
+
+    void deleteVectorsOfHeaders(){
+        for (int i = 0; i < rows; ++i) {
+            delete (*rootY)[i];
+            (*rootY)[i] = nullptr;
+        }
+        for (int i = 0; i < columns; ++i) {
+            delete (*rootX)[i];
+            (*rootX)[i] = nullptr;
+        }
+
+        (*rootY).clear();
+        (*rootX).clear();
+
+        delete rootY;
+        delete rootX;
+
+        rootY=nullptr;
+        rootX= nullptr;
+    }
+
+    void newVectorsOfHeaders(){
         rootX = new vector<NodeHeader<T>*>(columns);
         rootY = new vector<NodeHeader<T>*>(rows);
 
@@ -51,25 +94,25 @@ public:
             (*rootY)[i] = new NodeHeader<T>();
     }
 
-    Matrix(const Matrix &constructCopy):rows(constructCopy.getRows()),columns(constructCopy.getColumns()){
-        rootX = new vector<NodeHeader<T>*>(columns);
-        rootY = new vector<NodeHeader<T>*>(rows);
-
-        for(int i = 0; i < columns; ++i)
-            (*rootX)[i] = new NodeHeader<T>();
-
-        for(int i = 0; i < rows; ++i)
-            (*rootY)[i] = new NodeHeader<T>();
-
+    void copyElementsOfMatrix(const Matrix<T>& matrixCopy){
         NodeElement<T>* temp = nullptr;
         for(int i = 0; i < rows; ++i){
-            temp = constructCopy[i].next;
+            temp = matrixCopy[i].next;
             while (temp) {
                 this->set(temp->posY,temp->posX,temp->data);
                 temp = temp->next;
             }
         }
+    }
 
+public:
+    Matrix(unsigned int rows, unsigned int columns):rows(rows),columns(columns){
+        newVectorsOfHeaders();
+    }
+
+    Matrix(const Matrix<T>& constructCopy):rows(constructCopy.getRows()),columns(constructCopy.getColumns()){
+        newVectorsOfHeaders();
+        copyElementsOfMatrix(constructCopy);
     }
 
     bool set(unsigned int posY, unsigned int posX, T data){
@@ -105,6 +148,20 @@ public:
             return true;
         }
         return false;
+    }
+
+    Matrix<T>& operator=(const Matrix<T>& other){
+        if(this != &other) {
+            deleteElements();
+            deleteVectorsOfHeaders();
+
+            this->rows = other.getRows();
+            this->columns = other.getColumns();
+
+            newVectorsOfHeaders();
+            copyElementsOfMatrix(other);
+        }
+        return *this;
     }
 
     T operator()(unsigned int posY, unsigned int posX){
@@ -194,50 +251,14 @@ public:
             cout<<endl;
         }
     }
+
     unsigned int getRows() const { return rows; }
     unsigned int getColumns() const { return columns; }
 
     ~Matrix(){
-       /* NodeElement<T>** findInY= nullptr;
-        NodeElement<T>** findInX = nullptr;
-
-        NodeElement<T>* tempY = nullptr;
-        NodeElement<T>* tempX = nullptr;
-
-        for (int i = 0; i < rows; ++i) {
-            findInY = &((*rootY)[i]->next);
-            while((*findInY)){
-                findInX = &((*rootX)[(*findInY)->posX]->next);
-                findInHeaderX((*findInY)->posY,findInX);
-
-                tempY = (*findInY)->next;
-                tempX = (*findInX)->down;
-
-                delete (*findInX);
-
-                (*findInX) = tempX;
-                (*findInY) = tempY;
-            }
-        }
-
-        for (int i = 0; i < rows; ++i) {
-            delete (*rootY)[i];
-            (*rootY)[i] = nullptr;
-        }
-        for (int i = 0; i < columns; ++i) {
-            delete (*rootX)[i];
-            (*rootX)[i] = nullptr;
-        }
-
-        (*rootY).clear();
-        (*rootX).clear();
-
-        delete rootY;
-        delete rootX;
-
-        rootY=nullptr;
-        rootX= nullptr;
-    */}
+        deleteElements();
+        deleteVectorsOfHeaders();
+    }
 };
 
 #endif //SPARSE_MATRIX_MATRIX_H
