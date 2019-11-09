@@ -16,11 +16,11 @@ private:
 
     void setRootX(unsigned int posX, unsigned int posY, NodeElement<T>* newNode){
         NodeElement<T>** findInX = &((*rootX)[posX]->next);
-        if(!findInHeaderX(posY,findInX)){
-            NodeElement<T>* temp = (*findInX);
-            (*findInX) = newNode;
-            newNode->down = temp;
-        }
+        findInHeaderX(posY,findInX); //return false
+
+        NodeElement<T>* temp = (*findInX);
+        (*findInX) = newNode;
+        newNode->down = temp;
     }
 
     bool findInHeaderY(unsigned int posX, NodeElement<T>**& pointer){
@@ -100,7 +100,7 @@ public:
                     newNode->next = temp;
                     setRootX(posX, posY, newNode);
                 }
-                return false;
+                else return false;
             }
             return true;
         }
@@ -131,40 +131,74 @@ public:
         }
         return newMatrix;
     }
-    /*Matrix<T> operator*(Matrix<T> other) const;
-    Matrix<T> operator+(Matrix<T> other) const;
-    Matrix<T> operator-(Matrix<T> other) const;
-    Matrix<T> transpose() const;*/
-
-    void print() const{
-        NodeElement<T>* temp = nullptr;
-        int aux = 0;
-        for(auto it = rootY->cbegin(); it != rootY->cend(); ++it){
-            temp = (*it)->next;
-
-            while(temp){
-                while (aux++ < temp->posX)
-                    cout << "0 ";
-                cout << temp->data << " ";
-                temp = temp->next;
+    Matrix<T> operator*(Matrix<T> other) const{
+        if(this->columns != other.getRows()) throw new out_of_range("No son compatibles");
+        else{
+            Matrix<T> multiplicationMatrix(this->getRows(),other.getColumns());
+            T result = 0;
+            auto n = this->columns;
+            for (int i = 0; i < multiplicationMatrix.getRows(); ++i) {
+                for (int j = 0; j < multiplicationMatrix.getColumns(); ++j) {
+                    for (int k = 0; k < n; ++k) {
+                        result+=(*this)[i][k]*other[k][j];
+                    }
+                    multiplicationMatrix.set(i,j,result);
+                    result = 0;
+                }
             }
-
-            while (aux++ < columns)
-                    cout << "0 ";
-
-            aux = 0;
-            putchar('\n');
+            return multiplicationMatrix;
         }
     }
+    Matrix<T> operator+(Matrix<T> other) const{
 
-    //void setRows(unsigned int rows){ Matrix::rows = rows; }
-    //void setcolumns(unsigned int columns){ Matrix::columns = columns; }
+        if(this->rows != other.getRows()) throw new out_of_range("No son las mismas filas");
+        else if(this->columns != other.getColumns()) throw new out_of_range("No son las mismas columnas");
+        else{
+            Matrix<T> sumMatrix(this->rows,this->columns);
+            for (int i = 0; i < rows; ++i) {
+                for (int j = 0; j < columns; ++j) {
+                    sumMatrix.set(i,j,(*this)[i][j] + other[i][j]);
+                }
+            }
+            return sumMatrix;
+        }
+    }
+    Matrix<T> operator-(Matrix<T> other) const{
+        if(this->rows != other.getRows()) throw new out_of_range("Not aren't same rows");
+        else if(this->columns != other.getColumns()) throw new out_of_range("Not aren't same columns");
+        else{
+            Matrix<T> sumMatrix(this->rows,this->columns);
+            for (int i = 0; i < rows; ++i) {
+                for (int j = 0; j < columns; ++j) {
+                    sumMatrix.set(i,j,(*this)[i][j] - other[i][j]);
+                }
+            }
+            return sumMatrix;
+        }
+    }
+    Matrix<T> transpose() const{
+        Matrix<int> matrixTransporse(this->columns,this->rows);
+        for (int i = 0; i < matrixTransporse.getRows(); ++i) {
+            for (int j = 0; j < matrixTransporse.getColumns(); ++j) {
+                matrixTransporse.set(i,j,(*this)[j][i]);
+            }
+        }
+        return matrixTransporse;
+    }
 
+    void print() const{
+        for (int i = 0; i < rows; ++i) {
+            for (int j = 0; j < columns; ++j) {
+                cout<<(*this)[i][j]<<" ";
+            }
+            cout<<endl;
+        }
+    }
     unsigned int getRows() const { return rows; }
     unsigned int getColumns() const { return columns; }
 
     ~Matrix(){
-        NodeElement<T>** findInY= nullptr;
+       /* NodeElement<T>** findInY= nullptr;
         NodeElement<T>** findInX = nullptr;
 
         NodeElement<T>* tempY = nullptr;
@@ -200,7 +234,10 @@ public:
 
         delete rootY;
         delete rootX;
-    }
+
+        rootY=nullptr;
+        rootX= nullptr;
+    */}
 };
 
 #endif //SPARSE_MATRIX_MATRIX_H
