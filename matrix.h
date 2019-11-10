@@ -3,6 +3,7 @@
 
 #include <stdexcept>
 #include <vector>
+#include <iomanip>
 #include "node.h"
 using namespace std;
 
@@ -94,7 +95,7 @@ private:
             (*rootY)[i] = new NodeHeader<T>();
     }
 
-    void copyElementsOfMatrix(const Matrix<T>& matrixCopy){
+    void CopyElementsOfOtherMatrix(const Matrix<T>& matrixCopy){
         NodeElement<T>* temp = nullptr;
         for(int i = 0; i < rows; ++i){
             temp = matrixCopy[i].next;
@@ -102,6 +103,16 @@ private:
                 this->set(temp->posY,temp->posX,temp->data);
                 temp = temp->next;
             }
+        }
+    }
+
+    void printMatrix(unsigned int width) const{
+        int i,j;
+        for (i = 0; i < rows; ++i) {
+            for (j = 0; j < columns - 1; ++j) {
+                cout<<setw(width)<<(*this)[i][j]<<" ";
+            }
+            cout<<setw(width)<<(*this)[i][j]<<endl;
         }
     }
 
@@ -114,11 +125,11 @@ public:
 
     Matrix(const Matrix<T>& constructCopy):rows(constructCopy.getRows()),columns(constructCopy.getColumns()){
         newVectorsOfHeaders();
-        copyElementsOfMatrix(constructCopy);
+        CopyElementsOfOtherMatrix(constructCopy);
     }
 
-    bool set(unsigned int posY, unsigned int posX, T data){
-        if(columns > posX && rows > posY){
+    void set(unsigned int posY, unsigned int posX, T data){
+        if( (0<=posX && posX < columns) && (0<=posY && posY < rows) ){
             NodeElement<T>** findInY = &((*rootY)[posY]->next);
 
             if(findInHeaderY(posX,findInY)) {
@@ -145,11 +156,9 @@ public:
                     newNode->next = temp;
                     setRootX(posX, posY, newNode);
                 }
-                else return false;
             }
-            return true;
         }
-        return false;
+        else throw new out_of_range("No es posible");
     }
 
     Matrix<T> operator=(const Matrix<T>& other){
@@ -161,7 +170,7 @@ public:
             this->columns = other.getColumns();
 
             newVectorsOfHeaders();
-            copyElementsOfMatrix(other);
+            CopyElementsOfOtherMatrix(other);
         }
         return *this;
     }
@@ -170,7 +179,7 @@ public:
         NodeElement<T>** findInY = &((*rootY)[posY]->next);
         if(findInHeaderY(posX,findInY))
             return (*findInY)->data;
-        else return 0;
+        return 0;
     }
 
     NodeHeader<T> operator[](unsigned int posY) const{
@@ -267,12 +276,12 @@ public:
     }
 
     void print() const{
-        for (int i = 0; i < rows; ++i) {
-            for (int j = 0; j < columns; ++j) {
-                cout<<(*this)[i][j]<<" ";
-            }
-            cout<<endl;
-        }
+        printMatrix(0);
+    }
+
+    void print(int width) const{
+        if(width >= 0) printMatrix(width);
+        else throw new invalid_argument("width invalid");
     }
 
     unsigned int getRows() const { return rows; }
