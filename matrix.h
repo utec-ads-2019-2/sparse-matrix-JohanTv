@@ -106,6 +106,8 @@ private:
     }
 
 public:
+    Matrix():rows(0),columns(0){};
+
     Matrix(unsigned int rows, unsigned int columns):rows(rows),columns(columns){
         newVectorsOfHeaders();
     }
@@ -150,7 +152,7 @@ public:
         return false;
     }
 
-    Matrix<T>& operator=(const Matrix<T>& other){
+    Matrix<T> operator=(const Matrix<T>& other){
         if(this != &other) {
             deleteElements();
             deleteVectorsOfHeaders();
@@ -174,7 +176,28 @@ public:
     NodeHeader<T> operator[](unsigned int posY) const{
         return *((*rootY)[posY]);
     }
-
+    bool operator!=(Matrix<T>& other){
+        if(this->rows == other.getRows() && this->columns == other.getColumns()){
+            for (int i = 0; i < rows; ++i) {
+                for (int j = 0; j < columns; ++j) {
+                    if((*this)[i][j] != other[i][j]) return true;
+                }
+            }
+            return false;
+        }
+        return true;
+    }
+    bool operator==(Matrix<T>& other){
+        if(this->rows == other.getRows() && this->columns == other.getColumns()){
+            for (int i = 0; i < rows; ++i) {
+                for (int j = 0; j < columns; ++j) {
+                    if((*this)[i][j] != other[i][j]) return false;
+                }
+            }
+            return true;
+        }
+        return false;
+    }
     Matrix<T> operator*(T scalar) const{
         Matrix<T> newMatrix = *this;
 
@@ -188,7 +211,7 @@ public:
         }
         return newMatrix;
     }
-    Matrix<T> operator*(Matrix<T> other) const{
+    Matrix<T> operator*(Matrix<T>& other) const{
         if(this->columns != other.getRows()) throw new out_of_range("No son compatibles");
         else{
             Matrix<T> multiplicationMatrix(this->getRows(),other.getColumns());
@@ -206,7 +229,7 @@ public:
             return multiplicationMatrix;
         }
     }
-    Matrix<T> operator+(Matrix<T> other) const{
+    Matrix<T> operator+(Matrix<T>& other) const{
 
         if(this->rows != other.getRows()) throw new out_of_range("No son las mismas filas");
         else if(this->columns != other.getColumns()) throw new out_of_range("No son las mismas columnas");
@@ -220,7 +243,7 @@ public:
             return sumMatrix;
         }
     }
-    Matrix<T> operator-(Matrix<T> other) const{
+    Matrix<T> operator-(Matrix<T>& other) const{
         if(this->rows != other.getRows()) throw new out_of_range("Not aren't same rows");
         else if(this->columns != other.getColumns()) throw new out_of_range("Not aren't same columns");
         else{
