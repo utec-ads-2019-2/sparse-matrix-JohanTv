@@ -244,8 +244,8 @@ public:
         }
     }
     Matrix<T> operator-(Matrix<T>& other) const{
-        if(this->rows != other.getRows()) throw new out_of_range("Not aren't same rows");
-        else if(this->columns != other.getColumns()) throw new out_of_range("Not aren't same columns");
+        if(this->rows != other.getRows()) throw new out_of_range("No son las mismas filas");
+        else if(this->columns != other.getColumns()) throw new out_of_range("No son las mismas columnas");
         else{
             Matrix<T> sumMatrix(this->rows,this->columns);
             for (int i = 0; i < rows; ++i) {
