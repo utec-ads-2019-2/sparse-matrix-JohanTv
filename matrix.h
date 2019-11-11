@@ -117,7 +117,9 @@ private:
     }
 
 public:
-    Matrix():rows(0),columns(0){};
+    Matrix():rows(0),columns(0){
+        newVectorsOfHeaders();
+    }
 
     Matrix(unsigned int rows, unsigned int columns):rows(rows),columns(columns){
         newVectorsOfHeaders();
